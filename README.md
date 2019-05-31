@@ -17,6 +17,7 @@ The basic idea of the paper is to do enable controlled reponse generation under 
 - [Pytorch 1.0](https://pytorch.org/)
 - [Pytorch-pretrained-BERT](https://github.com/huggingface/pytorch-pretrained-BERT)
 
+Please see the instructions to install the required packages before running experiments.
 
 ## Dialog Act Predictor
 This module is used to predict the next-step dialog acts based on the conversation history. Here we adopt the state-of-the-art NLU module [BERT](https://arxiv.org/abs/1810.04805) to get the best prediction accuracy.

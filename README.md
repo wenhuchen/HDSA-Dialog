@@ -1,7 +1,7 @@
 # HDSA-Dialog
 This is the code and data for ACL 2019 long paper "Semantically Conditioned Dialog Response Generation via Hierarchical Disentangled Self-Attention". The up-to-date version is in [http://arxiv.org/abs/1905.12866](http://arxiv.org/abs/1905.12866).
 
-! This site is still under construction, if you encounter any problem, do not hesitate to contact me or leave an issue in the repo.
+**This site is still under construction, if you encounter any problem, do not hesitate to contact me or leave an issue in the repo.**
 
 The full architecture is displayed as below:
 <p>

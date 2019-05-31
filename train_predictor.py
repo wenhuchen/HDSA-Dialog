@@ -31,7 +31,6 @@ import torch
 from torch.utils.data import (DataLoader, RandomSampler, SequentialSampler,
                               TensorDataset)
 from torch.utils.data.distributed import DistributedSampler
-from tqdm import tqdm, trange
 
 from torch.nn import CrossEntropyLoss, MSELoss, BCEWithLogitsLoss
 from scipy.stats import pearsonr, spearmanr
@@ -41,7 +40,6 @@ from pytorch_pretrained_bert.file_utils import PYTORCH_PRETRAINED_BERT_CACHE, WE
 from pytorch_pretrained_bert.modeling import BertForSequenceClassification, BertConfig
 from pytorch_pretrained_bert.tokenization import BertTokenizer
 from pytorch_pretrained_bert.optimization import BertAdam, WarmupLinearSchedule
-from tensorboardX import SummaryWriter
 from pprint import pprint
 from tools import obtain_TP_TN_FN_FP
 
@@ -459,7 +457,6 @@ def main():
         raise ValueError("Output directory ({}) already exists and is not empty.".format(args.output_dir))
     if not os.path.exists(args.output_dir):
         os.makedirs(args.output_dir)
-    writer = SummaryWriter(os.path.join(args.output_dir, 'events'))
 
     task_name = args.task_name.lower()
 
@@ -583,14 +580,11 @@ def main():
                 else:
                     loss.backward()
 
-                writer.add_scalar('train/loss', loss, global_step)
                 tr_loss += loss.item()
 
                 nb_tr_examples += input_ids.size(0)
                 nb_tr_steps += 1
                 if (step + 1) % args.gradient_accumulation_steps == 0:
-                    #preds = torch.argmax(logits, -1) == label_ids
-                    #acc = torch.sum(preds).float() / preds.size(0)
                     if args.fp16:
                         # modify learning rate with special warm up BERT uses
                         # if args.fp16 is False, BertAdam is used that handles this automatically
@@ -635,7 +629,6 @@ def main():
             global_step = 0
             output_dir = None
         save_dir = output_dir if output_dir is not None else args.load_dir
-        tbwriter = SummaryWriter(os.path.join(save_dir, 'eval/events'))
         load_step = args.load_step
         
         if args.load_dir is not None:

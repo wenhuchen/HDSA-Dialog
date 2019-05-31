@@ -19,7 +19,7 @@ The basic idea of the paper is to do enable controlled reponse generation under 
 
 Please see the instructions to install the required packages before running experiments.
 
-## Dialog Act Predictor
+## 1. Dialog Act Predictor
 This module is used to predict the next-step dialog acts based on the conversation history. Here we adopt the state-of-the-art NLU module [BERT](https://arxiv.org/abs/1810.04805) to get the best prediction accuracy. Make sure that you install the huggingface BERET model beforehand.
 ### Prepare data (optional)
 ```
@@ -37,8 +37,8 @@ CUDA_VISIBLE_DEVICES=0 python3.5 train_predictor.py --do_eval --test_set test --
 ```
 The output values are saved in data/BERT_dev_prediction.json and data/BERT_dev_prediction.json, these two files need to be kept for the generator training.
 
-## Response Generator
-This module is used to control the language generation based on the output of the pre-trained act predictor.
+## 2. Response Generator
+This module is used to control the language generation based on the output of the pre-trained act predictor. The training data is already preprocessed and put in data/ folder (train.json, val.json and test.json).
 ### Training
 ```
 CUDA_VISIBLE_DEVICES=0 python3.5 train_generator.py --option train --model BERT_dim128_w_domain_exp --batch_size 512 --max_seq_length 50 --field
@@ -53,7 +53,7 @@ CUDA_VISIBLE_DEVICES=0 python3.5 train_generator.py --option test --model BERT_d
 CUDA_VISIBLE_DEVICES=0 python3.5 train_generator.py --option postprocess --output_file /tmp/results.txt.pred.BERT_dim128_w_domain_exp.pred --model BERT --non_delex
 ```
 
-## Reproducibility
+## 3. Reproducibility
 - We release the pre-trained predictor model in [google drive](https://drive.google.com/open?id=1x2K07nMEFrmbzPZNNbJ6M93dE3EYcS-0), you can put the zip file into checkpoints/predictor and unzip it to get the save_step_15120 folder.
 ```
 CUDA_VISIBLE_DEVICES=0 python3.5 train_predictor.py --do_eval --test_set test --load_dir /tmp/output/save_step_15120
@@ -64,5 +64,5 @@ CUDA_VISIBLE_DEVICES=0 python3.5 train_generator.py --option test --model BERT_d
 CUDA_VISIBLE_DEVICES=0 python3.5 train_generator.py --option postprocess --output_file /tmp/results.txt.pred.BERT_dim128_w_domain.pred --model BERT --non_delex
 ```
 
-### Acknowledgements
+## Acknowledgements
 We sincerely thank University of Cambridge and PolyAI for releasing the dataset and [code](https://github.com/budzianowski/multiwoz)

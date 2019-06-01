@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 
 def parse_opt():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--option', type=str, default="train", help="whether to train or test the model")
+    parser.add_argument('--option', type=str, default="train", help="whether to train or test the model", choices=['train', 'test', 'postprocess'])
     parser.add_argument('--emb_dim', type=int, default=128, help="the embedding dimension")
     parser.add_argument('--dropout', type=float, default=0.2, help="the embedding dimension")
     parser.add_argument('--resume', action='store_true', default=False, help="whether to resume previous run")
@@ -75,31 +75,22 @@ if 'train' in args.option:
     train_sampler = RandomSampler(train_data)
     train_dataloader = DataLoader(train_data, sampler=train_sampler, batch_size=args.batch_size)
     *val_examples, val_id = get_batch(args.data_dir, 'val', tokenizer, args.max_seq_length)
+    dialogs = json.load(open('{}/val.json'.format(args.data_dir)))
+    gt_turns = json.load(open('{}/val_reference.json'.format(args.data_dir)))
 elif 'test' in args.option or 'postprocess' in args.option:
     *val_examples, val_id = get_batch(args.data_dir, 'test', tokenizer, args.max_seq_length)
-#elif 'val' in args.option:
-#    *val_examples, val_id = get_batch(args.data_dir, 'val', tokenizer, args.max_seq_length)
-  
-eval_data = TensorDataset(*val_examples)
-eval_sampler = SequentialSampler(eval_data)
-eval_dataloader = DataLoader(eval_data, sampler=eval_sampler, batch_size=args.batch_size)
-
-if 'postprocess' in args.option:
     dialogs = json.load(open('{}/test.json'.format(args.data_dir)))
     if args.non_delex:
         gt_turns = json.load(open('{}/test_reference_nondelex.json'.format(args.data_dir)))
     else:
         gt_turns = json.load(open('{}/test_reference.json'.format(args.data_dir)))   
-#elif 'val' in args.option:
-#    dialogs = json.load(open('{}/val.json'.format(args.data_dir)))
-#    if args.non_delex:
-#        gt_turns = json.load(open('{}/val_reference_nondelex.json'.format(args.data_dir)))
-#    else:
-#        gt_turns = json.load(open('{}/val_reference.json'.format(args.data_dir)))
-        
+  
+eval_data = TensorDataset(*val_examples)
+eval_sampler = SequentialSampler(eval_data)
+eval_dataloader = DataLoader(eval_data, sampler=eval_sampler, batch_size=args.batch_size)
+
 BLEU_calc = BLEUScorer()
 F1_calc = F1Scorer()
-
  
 if "BERT" in args.model:
     if args.field:

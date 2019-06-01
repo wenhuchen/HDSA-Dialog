@@ -30,7 +30,7 @@ python preprocess_data_for_predictor.py
 ### Training (if you use multiple GPU, the batch size can be enlarged)
 ```
 rm -r checkpoints/predictor/
-CUDA_VISIBLE_DEVICES=0 python3.5 train_predictor.py --do_train --do_eval --train_batch_size 6
+CUDA_VISIBLE_DEVICES=0 python3.5 train_predictor.py --do_train --do_eval --train_batch_size 6 --eval_batch_size 6
 ```
 ### Testing (using the model saved at xxx step)
 ```

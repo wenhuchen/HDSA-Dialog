@@ -22,7 +22,7 @@ The basic idea of the paper is to do enable controlled reponse generation under 
 Please see the instructions to install the required packages before running experiments.
 
 ## 1. Dialog Act Predictor
-This module is used to predict the next-step dialog acts based on the conversation history. Here we adopt the state-of-the-art NLU module [BERT](https://arxiv.org/abs/1810.04805) to get the best prediction accuracy. Make sure that you install the huggingface BERET model beforehand.
+This module is used to predict the next-step dialog acts based on the conversation history. Here we adopt the state-of-the-art NLU module [BERT](https://arxiv.org/abs/1810.04805) to get the best prediction accuracy. Make sure that you install the [Pytorch-pretrained-BERT](https://github.com/huggingface/pytorch-pretrained-BERT) beforehand, which will automatically download pre-trained model into your tmp folder.
 ### Prepare data (optional)
 ```
 python preprocess_data_for_predictor.py
@@ -30,7 +30,7 @@ python preprocess_data_for_predictor.py
 ### Training (if you use multiple GPU, the batch size can be enlarged)
 ```
 rm -r checkpoints/predictor/
-CUDA_VISIBLE_DEVICES=0 python3.5 train_predictor.py --do_train --do_eval --train_batch_size 6
+CUDA_VISIBLE_DEVICES=0 python3.5 train_predictor.py --do_train --do_eval --train_batch_size 6 --eval_batch_size 6
 ```
 ### Testing (using the model saved at xxx step)
 ```

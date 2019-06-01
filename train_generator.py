@@ -121,6 +121,7 @@ if args.option == 'train':
     logger.info("Start Training with {} batches".format(len(train_dataloader)))
 
     optimizer = torch.optim.Adam(filter(lambda x: x.requires_grad, decoder.parameters()), betas=(0.9, 0.98), eps=1e-09)
+    scheduler = MultiStepLR(optimizer, milestones=[50, 100, 150, 200], gamma=0.5)
     
     best_BLEU = 0
     for epoch in range(360):
@@ -146,6 +147,7 @@ if args.option == 'train':
             if step % 100 == 0:
                 logger.info("epoch {} step {} training loss {}".format(epoch, step, loss.item()))                
 
+        scheduler.step()
         if loss.item() < 3.0 and epoch > 0 and epoch % args.evaluate_every == 0:
             logger.info("start evaluating BLEU on validation set")
             decoder.eval()

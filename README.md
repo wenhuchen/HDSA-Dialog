@@ -21,9 +21,19 @@ The basic idea of the paper is to do enable controlled reponse generation under 
 
 Please see the instructions to install the required packages before running experiments.
 
+## Folder
+- data: all the needed training/evaluation/testing data
+- transformer: the HDSA model, which include the hierarchical disentangled model (class TableSemanticDecoder)
+- preprocessing: the code for pre-processing the database and original downloaded data
+
 ## 1. Dialog Act Predictor
 This module is used to predict the next-step dialog acts based on the conversation history. Here we adopt the state-of-the-art NLU module [BERT](https://arxiv.org/abs/1810.04805) to get the best prediction accuracy. Make sure that you install the [Pytorch-pretrained-BERT](https://github.com/huggingface/pytorch-pretrained-BERT) beforehand, which will automatically download pre-trained model into your tmp folder.
-### Prepare data (optional)
+### Download pre-trained models and the delex.json (it is needed for calculating the inform/request success rate)
+```
+sh collect_data.sh
+```
+###
+### Prepare data (optional, already in the github repo)
 ```
 python preprocess_data_for_predictor.py
 ```
@@ -56,7 +66,7 @@ CUDA_VISIBLE_DEVICES=0 python3.5 train_generator.py --option postprocess --outpu
 ```
 
 ## 3. Reproducibility
-- We release the pre-trained predictor model in [google drive](https://drive.google.com/open?id=1x2K07nMEFrmbzPZNNbJ6M93dE3EYcS-0), you can put the zip file into checkpoints/predictor and unzip it to get the save_step_15120 folder.
+- We release the pre-trained predictor model in checkpoints/predictor, you can put the zip file into checkpoints/predictor and unzip it to get the save_step_15120 folder.
 ```
 CUDA_VISIBLE_DEVICES=0 python3.5 train_predictor.py --do_eval --test_set test --load_dir /tmp/output/save_step_15120
 ```

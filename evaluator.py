@@ -219,4 +219,8 @@ def evaluateDialogue(dialog, realDialogue):
             success = 0
 
     #rint requests, 'DIFF', requests_real, 'SUCC', success
+<<<<<<< HEAD
     return success, match, stats
+=======
+    return success, match, stats
+>>>>>>> f223aaa74d139d9ff14344592aa3fc342c64f6e3

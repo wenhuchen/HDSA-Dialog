@@ -1,5 +1,12 @@
 import sqlite3
+<<<<<<< HEAD
 import numpy as np
+=======
+
+import numpy as np
+import os
+print(os.getcwd())
+>>>>>>> f223aaa74d139d9ff14344592aa3fc342c64f6e3
 
 # loading databases
 domains = ['restaurant', 'hotel', 'attraction', 'train', 'taxi', 'hospital']#, 'police']

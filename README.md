@@ -23,7 +23,7 @@ Please see the instructions to install the required packages before running expe
 
 ## Folder
 - data: all the needed training/evaluation/testing data
-- transformer: the HDSA model, which include the hierarchical disentangled model (class TableSemanticDecoder)
+- transformer: all the baseline and proposed models, which include the hierarchical disentangled self-attention (class TableSemanticDecoder)
 - preprocessing: the code for pre-processing the database and original downloaded data
 
 ## 1. Dialog Act Predictor

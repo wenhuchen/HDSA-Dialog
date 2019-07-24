@@ -1,0 +1,3 @@
+wget --directory-prefix=data/  https://hdsa-dialog.s3-us-west-2.amazonaws.com/delex.json
+wget --directory-prefix=checkpoints/predictor/ https://hdsa-dialog.s3-us-west-2.amazonaws.com/save_step_15120.zip 
+unzip checkpoints/predictor/save_step_15120.zip -d checkpoints/predictor/

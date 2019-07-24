@@ -42,7 +42,7 @@ def parseGoal(goal, d, domain):
 
 def evaluateModel(dialogues, mode='valid'):
     """Gathers statistics for the whole sets."""
-    fin1 = open('/mnt/sshd/wenhuchen/multiwoz/data/multi-woz/delex.json')
+    fin1 = open('data/delex.json')
     delex_dialogues = json.load(fin1)
     successes, matches = 0, 0
     real_sucesses, real_matches = 0, 0

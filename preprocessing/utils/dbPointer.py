@@ -1,14 +1,11 @@
 import sqlite3
-
 import numpy as np
-import os
-print(os.getcwd())
 
 # loading databases
 domains = ['restaurant', 'hotel', 'attraction', 'train', 'taxi', 'hospital']#, 'police']
 dbs = {}
 for domain in domains:
-    db = '/mnt/sshd/wenhuchen/multiwoz/db/{}-dbase.db'.format(domain)
+    db = 'preprocessing/db/{}-dbase.db'.format(domain)
     conn = sqlite3.connect(db)
     c = conn.cursor()
     dbs[domain] = c

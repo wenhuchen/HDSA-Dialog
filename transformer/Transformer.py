@@ -774,6 +774,8 @@ def get_inst_idx_to_tensor_position_map(inst_idx_list):
 def collect_active_part(beamed_tensor, curr_active_inst_idx, n_prev_active_inst, n_bm):
     ''' Collect tensor parts associated to active instances. '''
     _, *d_hs = beamed_tensor.size()
+    import pdb
+    pdb.set_trace()
     n_curr_active_inst = len(curr_active_inst_idx)
     new_shape = (n_curr_active_inst * n_bm, *d_hs)
 

@@ -45,12 +45,12 @@ This module is used to control the language generation based on the output of th
 ```
 CUDA_VISIBLE_DEVICES=0 python3.5 train_generator.py --option train --model BERT_dim128_w_domain_exp --batch_size 512 --max_seq_length 50 --field
 ```
-### Delexicalized Testing
+### Delexicalized Testing (The entities are normalzied into placeholder like [restaurant_name])
 ```
 CUDA_VISIBLE_DEVICES=0 python3.5 train_generator.py --option test --model BERT_dim128_w_domain_exp --batch_size 512 --max_seq_length 50 --field
 ```
 
-### Non-Delexicalized Testing
+### Non-Delexicalized Testing (The entities need to be restored from the database record)
 ```
 CUDA_VISIBLE_DEVICES=0 python3.5 train_generator.py --option postprocess --output_file /tmp/results.txt.pred.BERT_dim128_w_domain_exp.pred --model BERT --non_delex
 ```

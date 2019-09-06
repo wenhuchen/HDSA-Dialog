@@ -20,14 +20,16 @@ from tools import *
 from collections import OrderedDict
 from evaluator import evaluateModel
 
-logging.basicConfig(format = '%(asctime)s - %(levelname)s - %(name)s -   %(message)s',
-                    datefmt = '%m/%d/%Y %H:%M:%S',
-                    level = logging.INFO)
+logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s -   %(message)s',
+                    datefmt='%m/%d/%Y %H:%M:%S',
+                    level=logging.INFO)
 logger = logging.getLogger(__name__)
+
 
 def parse_opt():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--option', type=str, default="train", help="whether to train or test the model", choices=['train', 'test', 'postprocess'])
+    parser.add_argument('--option', type=str, default="train",
+                        help="whether to train or test the model", choices=['train', 'test', 'postprocess'])
     parser.add_argument('--emb_dim', type=int, default=128, help="the embedding dimension")
     parser.add_argument('--dropout', type=float, default=0.2, help="the embedding dimension")
     parser.add_argument('--resume', action='store_true', default=False, help="whether to resume previous run")
@@ -36,20 +38,22 @@ def parse_opt():
     parser.add_argument('--data_dir', type=str, default='data', help="the embedding dimension")
     parser.add_argument('--beam_size', type=int, default=2, help="the embedding dimension")
     parser.add_argument('--max_seq_length', type=int, default=100, help="the embedding dimension")
-    parser.add_argument('--layer_num', type=int, default=3, help="the embedding dimension")    
+    parser.add_argument('--layer_num', type=int, default=3, help="the embedding dimension")
     parser.add_argument('--evaluate_every', type=int, default=5, help="the embedding dimension")
     parser.add_argument('--one_hot', default=False, action="store_true", help="whether to use one hot")
     parser.add_argument('--th', type=float, default=0.4, help="the embedding dimension")
     parser.add_argument('--head', type=int, default=4, help="the embedding dimension")
-    parser.add_argument("--output_dir", default="checkpoints/generator/", type=str, \
+    parser.add_argument("--output_dir", default="checkpoints/generator/", type=str,
                         help="The output directory where the model predictions and checkpoints will be written.")
     parser.add_argument("--learning_rate", default=1e-3, type=float, help="The initial learning rate for Adam.")
     parser.add_argument("--outfile", default='/tmp/results.txt', type=str, help="The initial learning rate for Adam.")
-    parser.add_argument("--output_file", default='/tmp/results.txt.pred', type=str, help="The initial learning rate for Adam.")
-    parser.add_argument("--non_delex", default=False, action="store_true", help="The initial learning rate for Adam.")    
+    parser.add_argument("--output_file", default='/tmp/results.txt.pred',
+                        type=str, help="The initial learning rate for Adam.")
+    parser.add_argument("--non_delex", default=False, action="store_true", help="The initial learning rate for Adam.")
     parser.add_argument("--field", default=False, action="store_true", help="The initial learning rate for Adam.")
     args = parser.parse_args()
     return args
+
 
 args = parse_opt()
 device = torch.device('cuda')
@@ -83,22 +87,22 @@ elif 'test' in args.option or 'postprocess' in args.option:
     if args.non_delex:
         gt_turns = json.load(open('{}/test_reference_nondelex.json'.format(args.data_dir)))
     else:
-        gt_turns = json.load(open('{}/test_reference.json'.format(args.data_dir)))   
-  
+        gt_turns = json.load(open('{}/test_reference.json'.format(args.data_dir)))
+
 eval_data = TensorDataset(*val_examples)
 eval_sampler = SequentialSampler(eval_data)
 eval_dataloader = DataLoader(eval_data, sampler=eval_sampler, batch_size=args.batch_size)
 
 BLEU_calc = BLEUScorer()
 F1_calc = F1Scorer()
- 
+
 if "BERT" in args.model:
     if args.field:
-        decoder = TableSemanticDecoder(vocab_size=tokenizer.vocab_len, d_word_vec=args.emb_dim, n_layers=args.layer_num, 
-                                      d_model=args.emb_dim, n_head=args.head, dropout=args.dropout)
+        decoder = TableSemanticDecoder(vocab_size=tokenizer.vocab_len, d_word_vec=args.emb_dim, n_layers=args.layer_num,
+                                       d_model=args.emb_dim, n_head=args.head, dropout=args.dropout)
     elif args.one_hot:
         decoder = TransformerDecoder(vocab_size=tokenizer.vocab_len, d_word_vec=args.emb_dim, act_dim=len(Constants.act_ontology),
-                                     n_layers=args.layer_num, d_model=args.emb_dim, n_head=args.head, dropout=args.dropout)      
+                                     n_layers=args.layer_num, d_model=args.emb_dim, n_head=args.head, dropout=args.dropout)
     else:
         decoder = TransformerDecoder(vocab_size=tokenizer.vocab_len, d_word_vec=args.emb_dim, act_dim=Constants.act_len,
                                      n_layers=args.layer_num, d_model=args.emb_dim, n_head=args.head, dropout=args.dropout)
@@ -122,30 +126,30 @@ if args.option == 'train':
 
     optimizer = torch.optim.Adam(filter(lambda x: x.requires_grad, decoder.parameters()), betas=(0.9, 0.98), eps=1e-09)
     scheduler = MultiStepLR(optimizer, milestones=[50, 100, 150, 200], gamma=0.5)
-    
+
     best_BLEU = 0
     for epoch in range(360):
         for step, batch in enumerate(train_dataloader):
             batch = tuple(t.to(device) for t in batch)
             input_ids, input_mask, segment_ids, act_vecs, query_results, \
                 rep_in, resp_out, belief_state, hierachical_act_vecs, *_ = batch
-            
+
             decoder.zero_grad()
             optimizer.zero_grad()
-            
+
             if args.one_hot:
                 logits = decoder(tgt_seq=rep_in, src_seq=input_ids, act_vecs=act_vecs)
             else:
                 logits = decoder(tgt_seq=rep_in, src_seq=input_ids, act_vecs=hierachical_act_vecs)
-            
-            loss = ce_loss_func(logits.contiguous().view(logits.size(0) * logits.size(1), -1).contiguous(), \
+
+            loss = ce_loss_func(logits.contiguous().view(logits.size(0) * logits.size(1), -1).contiguous(),
                                 resp_out.contiguous().view(-1))
-            
+
             loss.backward()
             optimizer.step()
-            
+
             if step % 100 == 0:
-                logger.info("epoch {} step {} training loss {}".format(epoch, step, loss.item()))                
+                logger.info("epoch {} step {} training loss {}".format(epoch, step, loss.item()))
 
         scheduler.step()
         if loss.item() < 3.0 and epoch > 0 and epoch % args.evaluate_every == 0:
@@ -153,16 +157,16 @@ if args.option == 'train':
             decoder.eval()
             # Start Evaluating after each epoch
             model_turns = {}
-            TP, TN, FN, FP = 0, 0, 0, 0            
+            TP, TN, FN, FP = 0, 0, 0, 0
             for batch_step, batch in enumerate(eval_dataloader):
                 batch = tuple(t.to(device) for t in batch)
                 input_ids, input_mask, segment_ids, act_vecs, query_results, \
                     rep_in, resp_out, belief_state, pred_hierachical_act_vecs, *_ = batch
 
-                hyps = decoder.translate_batch(act_vecs=pred_hierachical_act_vecs, \
-                                               src_seq=input_ids, n_bm=args.beam_size, 
+                hyps = decoder.translate_batch(act_vecs=pred_hierachical_act_vecs,
+                                               src_seq=input_ids, n_bm=args.beam_size,
                                                max_token_seq_len=40)
-                
+
                 for hyp_step, hyp in enumerate(hyps):
                     pred = tokenizer.convert_id_to_tokens(hyp)
                     file_name = val_id[batch_step * args.batch_size + hyp_step]
@@ -171,7 +175,7 @@ if args.option == 'train':
                     else:
                         model_turns[file_name].append(pred)
             BLEU = BLEU_calc.score(model_turns, gt_turns)
-    
+
             logger.info("{} epoch, Validation BLEU {} ".format(epoch, BLEU))
             if BLEU > best_BLEU:
                 torch.save(decoder.state_dict(), checkpoint_file)
@@ -182,7 +186,7 @@ elif args.option == "test":
     logger.info("Loading model from {}".format(checkpoint_file))
     decoder.eval()
     logger.info("Start Testing with {} batches".format(len(eval_dataloader)))
-    
+
     model_turns = {}
     act_turns = {}
     step = 0
@@ -192,8 +196,8 @@ elif args.option == "test":
         batch = tuple(t.to(device) for t in batch)
         input_ids, input_mask, segment_ids, act_vecs, query_results, \
             rep_in, resp_out, belief_state, pred_hierachical_act_vecs, *_ = batch
-                
-        hyps = decoder.translate_batch(act_vecs=pred_hierachical_act_vecs, src_seq=input_ids, 
+
+        hyps = decoder.translate_batch(act_vecs=pred_hierachical_act_vecs, src_seq=input_ids,
                                        n_bm=args.beam_size, max_token_seq_len=40)
         for hyp_step, hyp in enumerate(hyps):
             pred = tokenizer.convert_id_to_tokens(hyp)
@@ -201,34 +205,34 @@ elif args.option == "test":
             if file_name not in model_turns:
                 model_turns[file_name] = [pred]
             else:
-                model_turns[file_name].append(pred)        
-                
-        logger.info("finished {}/{} used {} sec/per-sent".format(batch_step, len(eval_dataloader), \
-                                                           (time.time() - start_time) / args.batch_size))
+                model_turns[file_name].append(pred)
+
+        logger.info("finished {}/{} used {} sec/per-sent".format(batch_step, len(eval_dataloader),
+                                                                 (time.time() - start_time) / args.batch_size))
         start_time = time.time()
-           
+
     with open(args.outfile + ".pred", 'w') as fp:
-        model_turns = OrderedDict(sorted(model_turns.items()))            
+        model_turns = OrderedDict(sorted(model_turns.items()))
         json.dump(model_turns, fp, indent=2)
-    
+
     BLEU = BLEU_calc.score(model_turns, gt_turns)
     entity_F1 = F1_calc.score(model_turns, gt_turns)
-    
+
     logger.info("BLEU = {} EntityF1 = {}".format(BLEU, entity_F1))
 elif args.option == "postprocess":
     with open(args.output_file, 'r') as f:
         model_turns = json.load(f)
-        
+
     evaluateModel(model_turns)
-        
+
     success_rate = nondetokenize(model_turns, dialogs)
     BLEU = BLEU_calc.score(model_turns, gt_turns)
-    
+
     with open('/tmp/results.txt.pred.non_delex', 'w') as f:
-        model_turns = OrderedDict(sorted(model_turns.items()))        
+        model_turns = OrderedDict(sorted(model_turns.items()))
         json.dump(model_turns, f, indent=2)
     logger.info("Validation BLEU {}, Success Rate {}".format(BLEU, success_rate))
-    
+
     with open('/tmp/results.txt.non_delex', 'w') as f:
         json.dump(gt_turns, f, indent=2)
 else:

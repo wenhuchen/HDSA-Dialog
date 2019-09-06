@@ -7,10 +7,12 @@ import json
 domains = ['restaurant', 'hotel', 'attraction', 'train', 'taxi', 'hospital', 'police']
 requestables = ['phone', 'address', 'postcode', 'reference', 'id']
 
+
 def issubset(A, B):
     A = set(A)
     B = set(B)
     return A.issubset(B)
+
 
 def parseGoal(goal, d, domain):
     """Parses user goal into dictionary format."""
@@ -48,31 +50,31 @@ def evaluateModel(dialogues, mode='valid'):
     real_sucesses, real_matches = 0, 0
     total = 0
 
-    gen_stats = {'restaurant': [0, 0, 0], 'hotel': [0, 0, 0], 'attraction': [0, 0, 0], 'train': [0, 0,0], 'taxi': [0, 0, 0],
-             'hospital': [0, 0, 0], 'police': [0, 0, 0]}
+    gen_stats = {'restaurant': [0, 0, 0], 'hotel': [0, 0, 0], 'attraction': [0, 0, 0], 'train': [0, 0, 0], 'taxi': [0, 0, 0],
+                 'hospital': [0, 0, 0], 'police': [0, 0, 0]}
     sng_gen_stats = {'restaurant': [0, 0, 0], 'hotel': [0, 0, 0], 'attraction': [0, 0, 0], 'train': [0, 0, 0],
                      'taxi': [0, 0, 0],
                      'hospital': [0, 0, 0], 'police': [0, 0, 0]}
 
-    for filename, dial in dialogues.items():
+    filenames = sorted(dialogues.keys())
+    for filename in filenames:
+        dial = dialogues[filename]
         if filename not in delex_dialogues:
             filename += ".json"
-            
+
         data = delex_dialogues[filename]
-
         success, match, _ = evaluateDialogue(dial, data)
-
         successes += success
         matches += match
-        total += 1           
+        total += 1
 
     # Print results
     matches = matches / float(total) * 100
     successes = successes / float(total) * 100
 
     print('Corpus Entity Matches : %2.2f%%' % (matches))
-    print('Corpus Requestable Success : %2.2f%%' %  (successes))
-    #return "{}_{}".format("%2.2f"%bleu, matches, successes)
+    print('Corpus Requestable Success : %2.2f%%' % (successes))
+    # return "{}_{}".format("%2.2f"%bleu, matches, successes)
 
 
 def evaluateDialogue(dialog, realDialogue):
@@ -102,10 +104,10 @@ def evaluateDialogue(dialog, realDialogue):
             if '[' + domain + '_name]' in sent_t or 'trainid]' in sent_t:
                 if domain in ['restaurant', 'hotel', 'attraction', 'train']:
                     # HERE YOU CAN PUT YOUR BELIEF STATE ESTIMATION
-                    venues = queryResultVenues(domain, realDialogue['log'][t*2 + 1])
+                    venues = queryResultVenues(domain, realDialogue['log'][t * 2 + 1])
                     # if venue has changed
                     if len(venue_offered[domain]) == 0 and venues:
-                        venue_offered[domain] = venues#random.sample(venues, 1)
+                        venue_offered[domain] = venues  # random.sample(venues, 1)
                     else:
                         flag = True
                         for ven in venue_offered[domain]:
@@ -139,7 +141,7 @@ def evaluateDialogue(dialog, realDialogue):
                 else:
                     if domain + '_' + requestable + ']' in sent_t:
                         provided_requestables[domain].append(requestable)
-                        
+
     # if name was given in the task
     for domain in goal.keys():
         # if name was provided for the user, the match is being done automatically
@@ -149,7 +151,7 @@ def evaluateDialogue(dialog, realDialogue):
         # special domains - entity does not need to be provided
         if domain in ['taxi', 'police', 'hospital']:
             venue_offered[domain] = '[' + domain + '_name]'
- 
+
         if domain == 'train':
             if not venue_offered[domain]:
                 if goal[domain]['requestable'] and 'id' not in goal[domain]['requestable']:
@@ -162,7 +164,7 @@ def evaluateDialogue(dialog, realDialogue):
     The dialogue is successful if that's the case for all domains.
     """
     # HARD EVAL
-    stats = {'restaurant': [0, 0, 0], 'hotel': [0, 0, 0], 'attraction': [0, 0, 0], 'train': [0, 0,0], 'taxi': [0, 0, 0],
+    stats = {'restaurant': [0, 0, 0], 'hotel': [0, 0, 0], 'attraction': [0, 0, 0], 'train': [0, 0, 0], 'taxi': [0, 0, 0],
              'hospital': [0, 0, 0], 'police': [0, 0, 0]}
 
     match = 0
@@ -186,7 +188,7 @@ def evaluateDialogue(dialog, realDialogue):
 
         stats[domain][0] = match_stat
         stats[domain][2] = 1
-      
+
     if match == len(goal):
         match = 1
     else:
@@ -218,5 +220,5 @@ def evaluateDialogue(dialog, realDialogue):
         else:
             success = 0
 
-    #rint requests, 'DIFF', requests_real, 'SUCC', success
+    # rint requests, 'DIFF', requests_real, 'SUCC', success
     return success, match, stats

@@ -58,7 +58,7 @@ def obtain_TP_TN_FN_FP(pred, act, TP, TN, FN, FP, elem_wise=False):
         FN += ((pred == 0).astype('long') & (act > 0).astype('long')).sum()
         FP += ((pred > 0).astype('long') & (act == 0).astype('long')).sum()
         return TP, TN, FN, FP
-    
+
 class F1Scorer(object):
     ## BLEU score calculator via GentScorer interface
     ## it calculates the BLEU-4 by taking the entire corpus in
@@ -70,13 +70,13 @@ class F1Scorer(object):
         # containers
         with open('data/placeholder.json') as f:
             placeholder = json.load(f)['placeholder']
-        
+
         TP, TN, FN, FP = 0, 0, 0, 0
         # accumulate ngram statistics
         files = hypothesis.keys()
         for f in files:
             hyps = hypothesis[f]
-            refs = corpus[f]        
+            refs = corpus[f]
 
             hyps = [hyp.split() for hyp in hyps]
             refs = [ref.split() for ref in refs]
@@ -93,13 +93,13 @@ class F1Scorer(object):
                     if r in placeholder:
                         gt[placeholder.index(r)] += 1
                 TP, TN, FN, FP = obtain_TP_TN_FN_FP(pred, gt, TP, TN, FN, FP)
-            
+
         precision = TP / (TP + FP + 0.001)
         recall = TP / (TP + FN + 0.001)
-        F1 = 2 * precision * recall / (precision + recall + 0.001)            
+        F1 = 2 * precision * recall / (precision + recall + 0.001)
         return F1
 
-def sentenceBLEU(hyps, refs, n=1):   
+def sentenceBLEU(hyps, refs, n=1):
     count = [0, 0, 0, 0]
     clip_count = [0, 0, 0, 0]
     r = 0
@@ -146,8 +146,8 @@ def sentenceBLEU(hyps, refs, n=1):
     s = math.fsum(w * math.log(p_n) \
                   for w, p_n in zip(weights, p_ns) if p_n)
     bleu = bp * math.exp(s)
-    return bleu    
-    
+    return bleu
+
 class BLEUScorer(object):
     ## BLEU score calculator via GentScorer interface
     ## it calculates the BLEU-4 by taking the entire corpus in
@@ -158,13 +158,13 @@ class BLEUScorer(object):
     def score(self, old_hypothesis, old_corpus, n=1):
         file_names = old_hypothesis.keys()
         hypothesis = []
-        corpus = []        
+        corpus = []
         for f in file_names:
             old_h = old_hypothesis[f]
             old_c = old_corpus[f]
             for h, c in zip(old_h, old_c):
                 hypothesis.append([h])
-                corpus.append([c])   
+                corpus.append([c])
         # containers
         count = [0, 0, 0, 0]
         clip_count = [0, 0, 0, 0]
@@ -216,7 +216,7 @@ class BLEUScorer(object):
                       for w, p_n in zip(weights, p_ns) if p_n)
         bleu = bp * math.exp(s)
         return bleu
-    
+
 class Tokenizer(object):
     def __init__(self, vocab, ivocab, use_field, lower_case=True):
         super(Tokenizer, self).__init__()
@@ -227,7 +227,7 @@ class Tokenizer(object):
         if use_field:
             with open('data/placeholder.json') as f:
                 self.fields = json.load(f)['field']
-        
+
         self.vocab_len = len(self.vocab)
 
     def tokenize(self, sent):
@@ -240,41 +240,41 @@ class Tokenizer(object):
         if self.use_field and template:
             if w in self.fields and w in template:
                 return template.index(w) + self.vocab_len
-        
+
         if w in self.vocab:
             return self.vocab[w]
         else:
             return self.vocab[Constants.UNK_WORD]
-        
-    
+
+
     def get_word(self, k, template=None):
         if k > self.vocab_len and self.use_field and template:
             return template[k - self.vocab_len]
         else:
             k = str(k)
             return self.ivocab[k]
-            
+
     def convert_tokens_to_ids(self, sent, template=None):
         return [self.get_word_id(w, template) for w in sent]
 
     def convert_id_to_tokens(self, word_ids, template_ids=None, remain_eos=False):
         if isinstance(word_ids, list):
             if remain_eos:
-                return " ".join([self.get_word(wid, None) for wid in word_ids 
+                return " ".join([self.get_word(wid, None) for wid in word_ids
                                  if wid != Constants.PAD])
             else:
-                return " ".join([self.get_word(wid, None) for wid in word_ids 
-                                 if wid not in [Constants.PAD, Constants.EOS] ])                
+                return " ".join([self.get_word(wid, None) for wid in word_ids
+                                 if wid not in [Constants.PAD, Constants.EOS] ])
         else:
             if remain_eos:
-                return " ".join([self.get_word(wid.item(), None) for wid in word_ids 
+                return " ".join([self.get_word(wid.item(), None) for wid in word_ids
                                  if wid != Constants.PAD])
             else:
-                return " ".join([self.get_word(wid.item(), None) for wid in word_ids 
+                return " ".join([self.get_word(wid.item(), None) for wid in word_ids
                                  if wid not in [Constants.PAD, Constants.EOS]])
-            
+
     def convert_template(self, template_ids):
-        return [self.get_word(wid) for wid in template_ids if wid != Constants.PAD]  
+        return [self.get_word(wid) for wid in template_ids if wid != Constants.PAD]
 """"
 def nondetokenize(d_p, d_r):
     UNK = "xxxxxxx"
@@ -287,22 +287,22 @@ def nondetokenize(d_p, d_r):
             bs = gt_turn['BS']
             acts = gt_turn['act']
             ref = gt_turn['sys_orig']
-            
-            def change_words(domain, word, acts, keys, act_keys, kb_cols):              
+
+            def change_words(domain, word, acts, keys, act_keys, kb_cols):
                 for key, act_key, kb_col in zip(keys, act_keys, kb_cols):
                     if key in word:
-                        
+
                         if "reference" in word:
                             for act_name in acts:
                                 if domain in act_name and act_key in act_name and acts[act_name] != "?":
                                     new = acts[act_name].lower()
                                     return new
-                            
+
                         if kb != "None" and kb_col in kb[0]:
                             new = kb[1][kb[0].index(kb_col)].lower()
                             return new
                 return None
-                
+
             words = turn.split(' ')
             for i in range(len(words)):
                 word = words[i]
@@ -318,55 +318,55 @@ def nondetokenize(d_p, d_r):
                             words[i]= UNK
                     else:
                         if "attraction" in word:
-                            new = change_words("attraction", words[i], acts, ["address", "area", "name", "phone", "postcode", "pricerange"], 
+                            new = change_words("attraction", words[i], acts, ["address", "area", "name", "phone", "postcode", "pricerange"],
                                             ["addr", "area", "name", "phone", "post", "price"],
                                             ["address", "area", "name", "phone", "postcode", "pricerange"])
                             if new:
                                 words[i] = new
                         elif "hotel" in word:
-                            new = change_words("hotel", words[i], acts, ["name", "phone", "address", "postcode", "pricerange", "area"], 
+                            new = change_words("hotel", words[i], acts, ["name", "phone", "address", "postcode", "pricerange", "area"],
                                             ["name", "phone", "addr", "post", "price", "area"],
                                             ["name", "phone", "address", "postcode", "pricerange", "area"])
                             if new:
-                                words[i] = new                            
+                                words[i] = new
                         elif "restaurant" in word:
-                            new = change_words("restaurant", words[i], acts, ["name", "phone", "address", "postcode", "food", "pricerange", "area"], 
+                            new = change_words("restaurant", words[i], acts, ["name", "phone", "address", "postcode", "food", "pricerange", "area"],
                                                ["name", "phone", "addr", "post", "food", "price", "area"],
                                                ["name", "phone", "address", "postcode", "food", "pricerange", "area"])
                             if new:
-                                words[i] = new                        
+                                words[i] = new
                         elif "train" in word:
                             new = change_words("train", words[i], acts, ["trainid", "price"], ["id", "ticket"], ["trainID", "price"])
                             if new:
-                                words[i] = new                        
+                                words[i] = new
                         elif "police" in word:
-                            new = change_words("police", words[i], acts, ["name", "phone", "address", "postcode"], 
+                            new = change_words("police", words[i], acts, ["name", "phone", "address", "postcode"],
                                                 ["name", "phone", "addr", "post"],
                                                 ["name", "phone", "address", "postcode"])
                             if new:
-                                words[i] = new                        
+                                words[i] = new
                         elif "hospital" in word:
-                            new = change_words("hospital", words[i], acts, ["name", "phone", "address", "postcode", "department", "name"], 
+                            new = change_words("hospital", words[i], acts, ["name", "phone", "address", "postcode", "department", "name"],
                                                ["name", "phone", "address", "postcode", "department", "name"],
                                                ["name", "phone", "address", "postcode", "department", "name"])
                             if new:
-                                words[i] = new                        
+                                words[i] = new
                         elif "taxi" in word:
                             new = change_words("taxi", words[i], acts, ["phone", "type"], ["phone", "car"], ["phone", "type"])
                             if new:
-                                words[i] = new                        
+                                words[i] = new
                         elif "value_count" in word:
                             words[i] = "1"
-                        
+
                         elif "value_time" in word:
                             words[i] = "1:00"
-                        
+
                         elif "value_day" in word:
                             words[i] = "monday"
-                            
+
                         elif "value_place" in word:
                             words[i] = "cambridge"
-            
+
             new_words = " ".join(words)
             d_p[dialog_id][turn_id] = new_words
             turn_id += 1
@@ -383,7 +383,7 @@ def nondetokenize(d_p, d_r):
             kb = gt_dialog[turn_id]['source']
             act = gt_dialog[turn_id]['act']
             words = d_p[file_name][turn_id].split(' ')
-            for i in range(len(words)):    
+            for i in range(len(words)):
                 if "[" in words[i] and "]" in words[i]:
                     need_replace += 1.
                     if words[i] in kb:
@@ -403,7 +403,7 @@ def nondetokenize(d_p, d_r):
 """
 class Templator(object):
     with open('data/placeholder.json') as f:
-        fields = json.load(f)['field']    
+        fields = json.load(f)['field']
     templates = {}
     for f in fields:
         if 'pricerange' in f:
@@ -450,17 +450,16 @@ class Templator(object):
             templates[f] = {"yes":"it has parking", "no":"it does not have parking"}
         elif "internet":
             templates[f] = {"no":"it has internet", "no":"it does not have internet"}
-            
+
     @staticmethod
     def source2tempalte(source):
         string = ""
         for k, v in source.items():
-            if "_id]" not in k: 
+            if "_id]" not in k:
                 if k in Templator.templates:
                     if isinstance(Templator.templates[k], str):
                         string += Templator.templates[k] + " . "
                     else:
                         string += Templator.templates[k][v] + " . "
-        return string        
-"""     
-            
+        return string
+"""
